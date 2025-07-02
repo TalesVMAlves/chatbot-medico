@@ -1,3 +1,10 @@
 pandas
 ydata-profiling
 ipywidgets
+langchain==0.3.14
+langchain-google-genai==2.0.9
+langchain_chroma
+langchain_community
+langchain_huggingface
+chromadb==0.5.3
+pypdf
