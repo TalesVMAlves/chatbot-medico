@@ -1,0 +1,7 @@
+Processing: manejo_tratamento_influenza.pdf
+Loaded 60 pages from manejo_tratamento_influenza.pdf
+Split into 143 chunks
+Adding 143 chunks to database
+Database created at: C:\Users\Tales\Python\chatbot-medico\knowledge_base_chroma
+[34m[1mwandb[0m: Adding directory to artifact (.\knowledge_base_chroma)... Done. 0.0s
+✅ Database saved as WandB artifact: health_knowledge_base:v0:v0

@@ -7,16 +7,31 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.schema.document import Document
 from utils.get_embedding_function import get_embedding_function
 from langchain_chroma import Chroma
+import wandb
 
 load_dotenv()
 
 CHROMA_PATH = "knowledge_base_chroma"
 KNOWLEDGE_PATH = "conhecimento"
+WANDB_API = os.getenv("WANDB_API")
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--reset", action="store_true", help="Reset the database")
+    parser.add_argument("--wandb_project", type=str, default="health-chroma-db", help="WandB project name")
+    parser.add_argument("--wandb_run_name", type=str, default="process_health_docs", help="WandB run name")
     args = parser.parse_args()
+
+    # Initialize WandB
+    if not WANDB_API:
+        print("Warning: WANDB_API environment variable not set. WandB features disabled.")
+    else:
+        wandb.login(key=WANDB_API)
+        wandb_run = wandb.init(
+            project=args.wandb_project, 
+            name=args.wandb_run_name,
+            config={"reset_db": args.reset}
+        )
 
     if args.reset:
         print("Rebuilding database...")
@@ -25,6 +40,21 @@ def main():
     documents = load_documents()
     chunks = split_documents(documents)
     add_to_chroma(chunks)
+    
+    # Create WandB artifact
+    if WANDB_API:
+        artifact = wandb.Artifact(
+            name="health_knowledge_base",
+            type="vector-database",
+            description="Chroma vector store with health knowledge documents"
+        )
+        artifact.add_dir(CHROMA_PATH)
+        wandb_run.log_artifact(artifact)
+        
+        # Wait for artifact to finish uploading
+        artifact.wait()
+        print(f"✅ Database saved as WandB artifact: {artifact.name}:{artifact.version}")
+        wandb_run.finish()
 
 def load_documents():
     documents = []
@@ -40,8 +70,15 @@ def load_documents():
                     doc.metadata["page"] = doc.metadata.get("page", 0)
                 documents.extend(docs)
                 print(f"Loaded {len(docs)} pages from {file}")
+                
+                # Track with WandB
+                if WANDB_API:
+                    wandb.log({"file_processed": file, "pages_loaded": len(docs)})
+                    
             except Exception as e:
                 print(f"Error processing {file}: {str(e)}")
+                if WANDB_API:
+                    wandb.log({"file_error": file, "error_message": str(e)})
     return documents
 
 def split_documents(documents: list[Document]):
@@ -54,6 +91,10 @@ def split_documents(documents: list[Document]):
     )
     chunks = text_splitter.split_documents(documents)
     print(f"Split into {len(chunks)} chunks")
+    
+    if WANDB_API:
+        wandb.log({"total_chunks": len(chunks)})
+        
     return chunks
 
 def add_to_chroma(chunks: list[Document]):
@@ -71,6 +112,14 @@ def add_to_chroma(chunks: list[Document]):
     print(f"Adding {len(chunks_with_ids)} chunks to database")
     db.add_documents(chunks_with_ids)
     print(f"Database created at: {os.path.abspath(CHROMA_PATH)}")
+    
+    # Track Chroma stats
+    if WANDB_API:
+        collection = db.get()
+        wandb.log({
+            "chroma_documents": len(collection["ids"]),
+            "chroma_embeddings": len(collection["embeddings"]) if collection["embeddings"] else 0
+        })
 
 def calculate_chunk_ids(chunks):
     """
