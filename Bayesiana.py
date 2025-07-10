@@ -5,29 +5,29 @@ from sklearn.metrics import classification_report, confusion_matrix
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-df = pd.read_csv(r'dataset\large_data.csv') 
+df = pd.read_csv(r'dataset\conjunto_balanceado.csv') 
 
 train_df, temp_df = train_test_split(
     df,
     test_size=0.3, 
     random_state=42,
-    stratify=df['TYPE']
+    stratify=df['TIPO']
 )
 validation_df, test_df = train_test_split(
     temp_df,
     test_size=0.5,
     random_state=42,
-    stratify=temp_df['TYPE']
+    stratify=temp_df['TIPO']
 )
 
-X_train = train_df.drop(columns=['TYPE'])
-y_train = train_df['TYPE']
+X_train = train_df.drop(columns=['TIPO'])
+y_train = train_df['TIPO']
 
-X_val = validation_df.drop(columns=['TYPE']).values
-y_val = validation_df['TYPE']
+X_val = validation_df.drop(columns=['TIPO']).values
+y_val = validation_df['TIPO']
 
-X_test = test_df.drop(columns=['TYPE']).values
-y_test = test_df['TYPE']
+X_test = test_df.drop(columns=['TIPO']).values
+y_test = test_df['TIPO']
 
 model = BernoulliNB()
 model.fit(X_train, y_train)

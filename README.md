@@ -21,6 +21,8 @@ A base de conhecimento para o RAG foi construída a partir de documentos oficiai
     *   [Guia de Manejo e Tratamento de Influenza 2023](https://www.gov.br/saude/pt-br/centrais-de-conteudo/publicacoes/svsa/influenza/guia-de-manejo-e-tratamento-de-influenza-2023)
 *   **COVID-19:**
     *   [Saúde de A a Z: COVID-19](https://www.gov.br/saude/pt-br/assuntos/saude-de-a-a-z/c/covid-19)
+    **Resfriado:**
+    **Alergia Resíratória:**
 *   **Diretrizes Gerais de Saúde:**
     *   [Protocolos Clínicos e Diretrizes Terapêuticas (PCDT)](https://www.gov.br/saude/pt-br/assuntos/pcdt)
 
