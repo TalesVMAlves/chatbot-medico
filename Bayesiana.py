@@ -34,35 +34,47 @@ model.fit(X_train, y_train)
 
 y_pred = model.predict(X_val)
 
-print("Relatório de Classificação:")
+print("Relatório de Classificação Bayesiana:")
 print(classification_report(y_val, y_pred))
 
-print("Matriz de Confusão:")
+print("Matriz de Confusão Baysiana:")
 conf_mat = confusion_matrix(y_val, y_pred)
 sns.heatmap(conf_mat, annot=True, fmt='d', xticklabels=model.classes_, yticklabels=model.classes_)
 plt.xlabel('Predito')
 plt.ylabel('Real')
-plt.title('Matriz de Confusão - Validação')
+plt.title('Matriz de Confusão Baysiana- Validação')
 plt.show()
 
-sintomas_informados = ['tosse','espirro', 'conjuntivite', 'febre', 'dor de garganta']
-sintomas_maiuscula = [s.upper() for s in sintomas_informados]
-sistomas_formatado = [s.replace(' ', '_') for s in sintomas_maiuscula]
-colunas_modelo =  X_train.columns.tolist()
+#Colocar sintomas manualmente
+#sintomas_informados = []
+#sintomas_maiuscula = [s.upper() for s in sintomas_informados]
+#sintomas_formatado = [s.replace(' ', '_') for s in sintomas_maiuscula]
+#colunas_modelo =  X_train.columns.tolist()
 
 
-def preparar_entrada(sistomas_formatado, colunas_modelo):
+def preparar_entrada(sintomas_formatado, colunas_modelo):
     entrada = [0] * len(colunas_modelo)
-    for sintoma in sistomas_formatado:
+    for sintoma in sintomas_formatado:
         if sintoma in colunas_modelo:
             idx = colunas_modelo.index(sintoma)
             entrada[idx] = 1
     return entrada
 
-entrada = preparar_entrada(sistomas_formatado, colunas_modelo)
-probabilidades = model.predict_proba([entrada])[0]
-classes = model.classes_
-for classe, prob in zip(classes, probabilidades):
-    print(f"{classe}: {prob:.2%}")
+#Colocar sintomas no terminal
+sintomas_usuario = input("Digite os sintomas separados por vírgula: ").split(',')
+sintomas_maiuscula = [s.strip().upper() for s in sintomas_usuario]
+sintomas_formatado = [s.replace(' ', '_') for s in sintomas_maiuscula]
+colunas_modelo =  X_train.columns.tolist() 
 
-print("Diagnóstico mais provável:", classes[probabilidades.argmax()])
+# Preparar a entrada
+entrada = preparar_entrada(sintomas_formatado, colunas_modelo)
+
+# Checar se há sintomas válidos
+if not any(entrada):
+    print("Nenhum dos sintomas informados corresponde às colunas do modelo.")
+else:
+    probabilidades = model.predict_proba([entrada])[0]
+    classes = model.classes_
+    for classe, prob in zip(classes, probabilidades):
+        print(f"{classe}: {prob:.2%}")
+    print("Diagnóstico mais provável:", classes[probabilidades.argmax()])
