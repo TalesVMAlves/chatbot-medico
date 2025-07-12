@@ -1,59 +1,94 @@
-# Chatbot Médico Inteligente
+# 🤖 Chatbot Médico Inteligente 🩺
 
-Este projeto tem como objetivo desenvolver um agente inteligente para auxiliar no diagnóstico de doenças respiratórias, como Gripe, Resfriado, Alergia e COVID-19, com base nos sintomas apresentados pelos usuários. Utilizando técnicas de Recuperação Aumentada por Geração (RAG) e análise de dados preditiva, o sistema busca fornecer as informações baseado em evidên.
+Um agente de IA projetado para auxiliar na triagem e no fornecimento de informações sobre doenças respiratórias comuns (Gripe, Resfriado Comum, Alergias e COVID-19), utilizando uma base de conhecimento confiável e modelos preditivos explicáveis.
 
-## 📝 Visão Geral do Projeto
+> **Missão do Projeto:** Democratizar o acesso a informações de saúde confiáveis e auxiliar na diferenciação de sintomas respiratórios, oferecendo uma primeira camada de orientação baseada em evidências e dados.
 
-O sistema se propõe a:
+## ✨ Principais Funcionalidades
 
-*   **Fornecer Informações Confiáveis:** Utilizar a base de conhecimento oficial do Ministério da Saúde (SUS) para gerar respostas informativas e precisas sobre as doenças em questão.
-*   **Calcular Probabilidades de Sintomas:** Implementar modelos de machine learning para estimar a probabilidade de um usuário ter determinada doença com base nos sintomas reportados.
-*   **Acessibilidade e Confiabilidade:** Basear as análises em dados públicos e amplamente reconhecidos, garantindo a qualidade e a confiabilidade das informações.
+* **Triagem Inteligente de Sintomas:** Utiliza um modelo de Machine Learning para analisar os sintomas relatados pelo usuário e calcular a probabilidade de cada uma das quatro condições respiratórias.
+* **Base de Conhecimento Confiável (RAG):** Responde a perguntas sobre as doenças, tratamentos e prevenção utilizando a técnica de *Retrieval-Augmented Generation* (RAG) sobre documentos oficiais e guias de saúde.
+* **Análise Preditiva Explicável (XAI):** Para cada predição, gera um gráfico de forças (force plot) utilizando a biblioteca `SHAP`, mostrando quais sintomas mais contribuíram para o diagnóstico sugerido e por quê.
+
+## ⚙️ Como Funciona
+
+O fluxo de interação do sistema ocorre da seguinte forma:
+
+1.  **Entrada do Usuário:** O usuário descreve seus sintomas em linguagem natural.
+2.  **Extração de Sintomas:** Uma LLM (Large Language Model) processa o texto e preenche uma estrutura de dados (Pydantic), identificando a presença ou ausência de sintomas pré-definidos (ex: febre, tosse, coriza).
+3.  **Classificação Preditiva:** O vetor de sintomas estruturado é enviado para um modelo de classificação (ex: Regressão Logística) treinado, que retorna a probabilidade de cada doença.
+4.  **Geração de Explicação:** O `SHAP Explainer` analisa a predição e gera um *force plot*, que é salvo como uma imagem (`artefatos/shap_force.png`).
+5.  **Resposta ao Usuário:** O sistema apresenta a doença mais provável com seu percentual de confiança e permite que o usuário faça perguntas abertas, que são respondidas pelo sistema RAG.
+
+## 🚀 Tecnologias Utilizadas
+
+| Categoria                               | Tecnologias                                     |
+| :-------------------------------------- | :---------------------------------------------- |
+| **Machine Learning & Análise Preditiva**| `scikit-learn`, `pandas`, `numpy`      |
+| **RAG & LLMs** | `LangChain`, `ChromaDB`, `Gemini` |
+| **Explicabilidade de IA (XAI)** | `SHAP`                                          |
+| **Estrutura de Dados & Tipagem** | `Pydantic`                                      |
+| **Visualização de Dados** | `Matplotlib`                                    |
 
 ## 📚 Base de Conhecimento e Fontes de Dados
 
-### Documentos de Orientações do SUS (para RAG)
+A confiabilidade do sistema é garantida por fontes de dados oficiais e datasets públicos reconhecidos.
 
-A base de conhecimento para o RAG foi construída a partir de documentos oficiais do Ministério da Saúde, garantindo a atualização e a confiabilidade das informações sobre Gripe (Influenza) e COVID-19, bem como diretrizes gerais de saúde.
+### 1. Base de Conhecimento para RAG
 
-*   **Gripe (Influenza):**
-    *   [Saúde de A a Z: Gripe Influenza](https://www.gov.br/saude/pt-br/assuntos/saude-de-a-a-z/g/gripe-influenza)
-    *   [Guia de Manejo e Tratamento de Influenza 2023](https://www.gov.br/saude/pt-br/centrais-de-conteudo/publicacoes/svsa/influenza/guia-de-manejo-e-tratamento-de-influenza-2023)
-*   **COVID-19:**
-    *   [Saúde de A a Z: COVID-19](https://www.gov.br/saude/pt-br/assuntos/saude-de-a-a-z/c/covid-19)
-    **Resfriado:**
-    **Alergia Resíratória:**
-*   **Diretrizes Gerais de Saúde:**
-    *   [Protocolos Clínicos e Diretrizes Terapêuticas (PCDT)](https://www.gov.br/saude/pt-br/assuntos/pcdt)
+Os documentos a seguir foram vetorizados e armazenados no `ChromaDB` para alimentar o sistema de respostas:
 
-### Dataset de Sintomas (para Análise Preditiva)
+* **Gripe (Influenza):**
+    * Guia de Manejo e Tratamento de Influenza 2023 - Ministério da Saúde.
+    * Visão Geral e Manejo de Resfriados e Gripe - Universidade de Limpopo.
+    * Influenza (Sazonal) - Organização Mundial da Saúde (OMS).
+* **Resfriado Comum:**
+    * Guia do Episódio de Cuidado: Resfriado comum - Hospital Albert Einstein.
+    * Resfriado Comum - Johns Hopkins Medicine.
+* **Alergias Respiratórias:**
+    * Guia Rápido para Alergias Respiratórias - Allergy UK.
+    * Guia Definitivo para Identificar Alergias Respiratórias - ARCpoint Labs.
+    * Livro da EFA sobre Alergias Respiratórias - European Federation of Allergy and Airways Diseases Patients' Associations.
+* **COVID-19:**
+    * Doença do Coronavírus (COVID-19) - Organização Mundial da Saúde (OMS).
+* **Diretrizes Gerais de Sinais e Sintomas:**
+    * Guia de Prática Clínica: Sinais e Sintomas Respiratórios - Conselho Federal de Farmácia.
 
-Para o treinamento e avaliação de modelos de classificação de sintomas, utilizamos um dataset público disponível no Kaggle, que abrange sintomas de Gripe, Resfriado, Alergia e COVID-19.
+### 2. Dataset para Análise Preditiva
 
-*   **Sintomas de Gripe, Resfriado, Alergia e COVID-19:**
-    *   [Link do Dataset no Kaggle](https://www.kaggle.com/datasets/walterconway/covid-flu-cold-symptoms)
+Para o treinamento e avaliação dos modelos de classificação, foi utilizado um dataset público que contém uma lista de sintomas associados às quatro doenças.
 
-### SRAG (Síndrome Respiratória Aguda Grave) - DATASUS
+* **Sintomas de Gripe, Resfriado, Alergia e COVID-19:**
+    * **Fonte:** Kaggle
+    * **Link:** [COVID, Flu, Cold, Allergy Symptoms Dataset](https://www.kaggle.com/datasets/walterconway/covid-flu-cold-symptoms)
 
-O link para o SRAG do DATASUS esteve indisponível no momento da criação deste README, mas é reconhecido como uma fonte de dados extremamente relevante para análises aprofundadas sobre doenças respiratórias.
+## 📁 Estrutura do Projeto
 
-*   **Trabalho de Referência sobre Dados SRAG:** Recomendamos a consulta ao seguinte trabalho, que utiliza dados semelhantes:
-    *   [URL do Artigo na MDPI](https://www.mdpi.com/2076-3417/13/20/11518)
+chatbot-medico/│├── artefatos/│   ├── lr_classificador_respiratorio.pkl   # Modelo de classificação salvo│   ├── shap_explainer.pkl                  # Objeto SHAP explainer salvo│   └── shap_force.png                      # Imagem de exemplo gerada│├── knowledge_base_chroma/                  # Banco de dados vetorial do ChromaDB│├── services/│   ├── agents.py                           # Lógica do agente LLM para extração de sintomas│   └── health_tools.py                     # Funções de classificação e RAG│├── classes.py                              # Definição da classe Pydantic Sintomas├── notebooks/                              # Notebooks Jupyter para análise e treinamento│   └── 01-analise-exploratoria.ipynb└── requirements.txt                        # Dependências do projeto
+## 🛠️ Como Executar o Projeto
 
-## 🚀 Tecnologias e Abordagens
+1.  **Clone o Repositório**
+    ```bash
+    git clone [https://github.com/seu-usuario/chatbot-medico.git](https://github.com/seu-usuario/chatbot-medico.git)
+    cd chatbot-medico
+    ```
 
-*   **Recuperação Aumentada por Geração (RAG):** Implementação de um sistema RAG para consulta e sumarização de informações dos documentos do SUS.
-*   **Machine Learning:** Utilização de modelos preditivos para classificar doenças com base nos sintomas.
-*   **PyCaret:** Ferramenta de AutoML para agilizar o processo de construção e avaliação de modelos de machine learning.
+2.  **Crie e Ative um Ambiente Virtual**
+    ```bash
+    python -m venv .venv
+    source .venv/bin/activate  # No Windows: .venv\Scripts\activate
+    ```
 
-## 🧪 Experimentos e Análises Recomendadas
+3.  **Instale as Dependências**
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-Incentivamos a exploração e a replicação de análises utilizando as fontes de dados disponibilizadas:
+4.  **Configure as Variáveis de Ambiente**
+    * Crie um arquivo `.env` na raiz do projeto e adicione sua chave de API para o modelo de linguagem (ex: Google Gemini).
+    ```env
+    GOOGLE_API_KEY="SUA_CHAVE_DE_API_AQUI"
+    ```
 
-1.  **Análise com PyCaret e Dataset do Kaggle:**
-    *   Realizar a importação e o pré-processamento do dataset de sintomas do Kaggle.
-    *   Utilizar o PyCaret para experimentar diferentes modelos de classificação (ex: Logistic Regression, RandomForestClassifier, GradientBoostingClassifier) para prever a doença com base nos sintomas.
-    *   Avaliar a performance dos modelos utilizando métricas apropriadas (acurácia, precisão, recall, F1-score).
-2.  **Análise com Dados SRAG e PyCaret (quando disponíveis):**
-    *   Após a disponibilidade do link do DATASUS para SRAG, explorar a possibilidade de coletar e pré-processar esses dados.
-    *   Aplicar as mesmas técnicas do PyCaret para construir modelos preditivos, buscando insights sobre os padrões de SRAG.
+5.  **Execute o Sistema**
+    * Utilize os notebooks na pasta para interagir com as funções ou execute o script principal da sua aplicação.
