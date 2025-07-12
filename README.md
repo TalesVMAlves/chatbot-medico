@@ -62,25 +62,6 @@ Para o treinamento e avaliação dos modelos de classificação, foi utilizado u
     * **Fonte:** Kaggle
     * **Link:** [COVID, Flu, Cold, Allergy Symptoms Dataset](https://www.kaggle.com/datasets/walterconway/covid-flu-cold-symptoms)
 
-## 📁 Estrutura do Projeto
-
-chatbot-medico/
-│
-├── artefatos/
-│   ├── lr_classificador_respiratorio.pkl   # Modelo de classificação salvo
-│   ├── shap_explainer.pkl                  # Objeto SHAP explainer salvo
-│   └── shap_force.png                      # Imagem de exemplo gerada
-│
-├── knowledge_base_chroma/                  # Banco de dados vetorial do ChromaDB
-│
-├── services/
-│   ├── agents.py                           # Lógica do agente LLM para extração de sintomas
-│   └── health_tools.py                     # Funções de classificação e RAG
-│
-├── classes.py                              # Definição da classe Pydantic Sintomas
-├── notebooks/                              # Notebooks Jupyter para análise e treinamento
-│   └── 01-analise-exploratoria.ipynb
-└── requirements.txt                        # Dependências do projeto
 ## 🛠️ Como Executar o Projeto
 
 1.  **Clone o Repositório**
