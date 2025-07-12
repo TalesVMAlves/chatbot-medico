@@ -92,3 +92,7 @@ chatbot-medico/│├── artefatos/│   ├── lr_classificador_respirato
 
 5.  **Execute o Sistema**
     * Utilize os notebooks na pasta para interagir com as funções ou execute o script principal da sua aplicação.
+    * Para utilizar o chatbot utilize o App do streamlit. 
+        ```bash
+        streamlit run app.py
+        ```
