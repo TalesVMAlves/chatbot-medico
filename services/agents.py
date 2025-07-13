@@ -1,6 +1,4 @@
 import os
-from datetime import datetime
-from langchain import hub
 from langchain_chroma import Chroma
 from langchain.prompts import PromptTemplate
 from langchain.agents import Tool, AgentExecutor
@@ -8,20 +6,22 @@ from langchain.agents.format_scratchpad import format_log_to_str
 from langchain.agents.output_parsers import ReActSingleInputOutputParser
 from langchain.memory import ChatMessageHistory, ConversationBufferWindowMemory
 from langchain.tools.render import render_text_description
-from langchain.utilities import DuckDuckGoSearchAPIWrapper
 from langchain_google_genai import (
     ChatGoogleGenerativeAI,
     HarmBlockThreshold,
     HarmCategory,
 )
-import streamlit as st
 from utils.get_embedding_function import get_embedding_function
 from dotenv import load_dotenv
-
+from services.health_tools import query_rag, lr_classifier
 load_dotenv()
 os.environ["GOOGLE_API_KEY"] = os.getenv('GOOGLE_API_KEY')
 
-from langchain_huggingface import HuggingFaceEmbeddings
+from classes import Sintomas
+from langchain.output_parsers import PydanticOutputParser
+from langchain.schema import HumanMessage
+
+parser = PydanticOutputParser(pydantic_object=Sintomas)
 
 llm = ChatGoogleGenerativeAI(
     model="gemini-1.5-flash",
@@ -37,35 +37,52 @@ llm = ChatGoogleGenerativeAI(
     },
 )
 
+
+template = PromptTemplate(
+    template="""
+A partir da descrição a seguir, preencha os sintomas respiratórios indicados abaixo com True ou False.
+
+Texto do paciente: "{input_text}"
+
+Responda apenas no formato JSON conforme este exemplo:
+{format_instructions}
+""",
+    input_variables=["input_text"],
+    partial_variables={"format_instructions": parser.get_format_instructions()}
+)
+
+def inferir_sintomas_llm(input_text: str) -> Sintomas:
+    prompt = template.format(input_text=input_text)
+    resposta = llm.invoke([HumanMessage(content=prompt)])
+    return parser.parse(resposta.content)
+def analisar_e_classificar_sintomas(texto_usuario: str) -> dict:
+    """
+    Função wrapper que primeiro infere os sintomas do texto e depois os classifica.
+    """
+    sintomas_obj = inferir_sintomas_llm(texto_usuario)
+    
+    resultado_classificador = lr_classifier(sintomas_obj)
+    
+    return resultado_classificador
+
 prompt_template = PromptTemplate.from_template("""
-Seu nome é CLARA. Você é uma assistente virtual inteligente, especializada em oferecer suporte confiável, acessível e baseado em evidências sobre doenças respiratórias, com foco em gripe, resfriado, alergias respiratórias e COVID-19.
+Você é CLARA, uma assistente virtual de saúde. Sua missão é fornecer uma orientação clara e empática baseada nos sintomas informados.
 
-CLARA é uma agente virtual treinada para responder dúvidas da população sobre sintomas, prevenção, tratamentos básicos, sinais de alerta e quando procurar atendimento médico. Sua base de conhecimento está ancorada em informações públicas e oficiais, especialmente nas diretrizes do DataSUS, Ministério da Saúde e protocolos clínicos de atenção primária.
+**Resumo da Análise:**
+- **Pré-Diagnóstico Provável:** DIAGNÓSTICO (use a ferramenta "Análise de Sintomas Respiratórios")
+- **Nível de Confiança:** CONFIANÇA (resultado da mesma ferramenta)
 
-Como um modelo AELM (Modelo de Linguagem de Execução Automática), CLARA utiliza tecnologia RAG (Retrieval-Augmented Generation) para acessar conteúdos atualizados de fontes confiáveis, como manuais de conduta clínica, guias de vigilância e a base de dados pública do SUS.
-                                               
-CLARA segue os seguintes princípios:
+**Informações Adicionais (Baseado em guias do SUS):**
+INFORMAÇÕES RAG (geradas com a ferramenta "Buscar Diretrizes de Saúde Respiratória")
+---
+**Resposta para o Paciente:**
 
-    1. **Foco na saúde do cidadão** — Suas respostas devem ser empáticas, claras e compreensíveis, sem alarmismo, termos técnicos desnecessários ou linguagem que possa causar confusão.
-    2. **Conformidade com diretrizes de saúde pública** — Todas as informações são baseadas nas orientações mais recentes do SUS, DataSUS e autoridades sanitárias.
-    3. **Responsabilidade e ética** — CLARA não faz diagnósticos e não substitui uma avaliação médica. Quando necessário, orienta o usuário a procurar atendimento de saúde qualificado.
+Com base nos sintomas que você descreveu, a análise sugere que a condição mais provável é **DIAGNOSTICO**, com um nível de confiança de **CONFIANCA**.
 
-Como CLARA deve interagir:
+Aqui estão algumas orientações gerais para esta condição:
+- [Resuma as informações do RAG em 2-3 pontos principais, como recomendações de repouso, hidratação, etc.]
 
-    1. Responda de forma acolhedora, clara e com foco na dúvida do usuário.
-    2. Adapte a linguagem conforme o perfil do cidadão: use termos populares, evite siglas técnicas e ofereça exemplos quando possível.
-    3. Nunca invente respostas. Se a informação não estiver disponível ou exigir avaliação profissional, oriente o cidadão a buscar um posto de saúde, UPA ou médico.
-    4. Utilize ferramentas disponíveis para buscar informações atualizadas da base do DataSUS ou diretrizes do Ministério da Saúde.
-    5. Mantenha um tom gentil, humano e confiável.
-                                               
-Exemplos de perguntas que você pode responder:
-    1. Qual a diferença entre gripe e resfriado?
-    2. Estou com tosse e dor no corpo, pode ser COVID?
-    3. Quais os sintomas de alergia respiratória?
-    4. Quando devo procurar atendimento médico para gripe?
-    5. Como prevenir a gripe em crianças?
-    6. Quais vacinas ajudam a prevenir doenças respiratórias?
-    7. Onde encontro uma unidade de saúde próxima?
+**Importante:** Este é um pré-laudo e **não substitui uma consulta médica**. Se os sintomas piorarem, persistirem por mais de 5-7 dias, ou se você tiver dificuldade para respirar, procure atendimento médico imediatamente. A imagem do gráfico de análise dos seus sintomas foi salva e pode ser consultada.
                                                
 TOOLS:
 ------
@@ -99,31 +116,20 @@ Nova entrada: {input}
 {agent_scratchpad}
 """)
 
-ddg_search = DuckDuckGoSearchAPIWrapper()
-
-def query_rag(query_text: str) -> str:
-    embedding_function = get_embedding_function()
-
-    db = Chroma(persist_directory="knowledge_base_chroma", embedding_function=embedding_function)
-
-    results = db.similarity_search_with_score(f"{query_text}", k=5)
-
-    context_text = "\n\n---\n\n".join([doc.page_content for doc, _score in results])
-    return context_text
-
 tools = [
     Tool(
-        name="DuckDuckGo Search",
-        func=ddg_search.run,
-        description="""Essa ferramenta DEVE ser utilizada para buscar eventos relevantes no período fornecido pelo usuário. 
-        Ela é útil para obter informações sobre eventos ou atividades especiais que estão acontecendo na cidade de destino nas datas que o usuário informou. 
-        O modelo deve usá-la para complementar as sugestões de atividades."""
+        name="Analisar Sintomas e Obter Pre-Diagnostico",
+        func=analisar_e_classificar_sintomas,
+        description="""Use esta ferramenta como o PRIMEIRO PASSO sempre que um usuário descrever seus sintomas respiratórios. 
+        A entrada DEVE SER o texto original do usuário. 
+        A ferramenta processará o texto, identificará os sintomas, executará um modelo de classificação e retornará um pré-diagnóstico com a condição mais provável (ex: Gripe, Resfriado), o nível de confiança e o caminho para um gráfico de análise."""
     ),
     Tool(
-        name="Query RAG",
-        func=lambda query_text: query_rag(query_text),
-        description="""Esta ferramenta deve ser usada quando o modelo precisar de informações sobre doenças respiratórias"""
-    ),
+        name="Buscar Diretrizes de Saude",
+        func=query_rag,
+        description="""Use esta ferramenta DEPOIS de obter um pré-diagnóstico da ferramenta "Analisar Sintomas e Obter Pre-Diagnostico". 
+        Use o nome da doença retornada (ex: 'Gripe') como entrada para buscar informações adicionais, como tratamentos, cuidados recomendados e medidas de prevenção, para enriquecer a resposta final ao usuário."""
+    )
 ]
 llm_with_stop = llm.bind(stop=["\nObservation"])
 
