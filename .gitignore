@@ -1,4 +1,7 @@
 .venv/
 __pycache__/
 knowledge_base_chroma/
+wandb
 .env
+wandb
+teste.ipynb
