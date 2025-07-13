@@ -36,7 +36,7 @@ model = BernoulliNB()
 model.fit(X_train, y_train)
 joblib.dump(model, 'artefatos/bnb_classificador_respiratorio.pkl')
 
-explainer = shap.Explainer(model.predict_proba, X_train)
+explainer = shap.KernelExplainer(model.predict_proba, X_train, nsamples=100)
 joblib.dump(explainer, 'artefatos/shap_explainer_nb.pkl')
 
 shap_values = explainer(X_val)  
