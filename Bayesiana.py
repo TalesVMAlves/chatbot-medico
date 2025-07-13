@@ -4,6 +4,9 @@ from sklearn.naive_bayes import BernoulliNB
 from sklearn.metrics import classification_report, confusion_matrix
 import seaborn as sns
 import matplotlib.pyplot as plt
+import shap
+import numpy as np
+import joblib
 
 df = pd.read_csv(r'dataset\conjunto_balanceado.csv') 
 
@@ -23,7 +26,7 @@ validation_df, test_df = train_test_split(
 X_train = train_df.drop(columns=['TIPO'])
 y_train = train_df['TIPO']
 
-X_val = validation_df.drop(columns=['TIPO']).values
+X_val = validation_df.drop(columns=['TIPO'])
 y_val = validation_df['TIPO']
 
 X_test = test_df.drop(columns=['TIPO']).values
@@ -31,7 +34,13 @@ y_test = test_df['TIPO']
 
 model = BernoulliNB()
 model.fit(X_train, y_train)
+joblib.dump(model, 'artefatos/bnb_classificador_respiratorio.pkl')
 
+explainer = shap.Explainer(model.predict_proba, X_train)
+joblib.dump(explainer, 'artefatos/shap_explainer_nb.pkl')
+
+shap_values = explainer(X_val)  
+joblib.dump(shap_values, 'artefatos/shap_values_nb.pkl')
 y_pred = model.predict(X_val)
 
 print("Relatório de Classificação Bayesiana:")
@@ -78,3 +87,4 @@ else:
     for classe, prob in zip(classes, probabilidades):
         print(f"{classe}: {prob:.2%}")
     print("Diagnóstico mais provável:", classes[probabilidades.argmax()])
+
