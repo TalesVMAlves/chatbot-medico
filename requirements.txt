@@ -1,18 +1,19 @@
-pandas
-ydata-profiling
-ipywidgets
-langchain==0.3.14
-langchain-google-genai==2.0.9
-langchain_chroma
-langchain_community
-langchain_huggingface
-chromadb==0.5.3
-pypdf
-wandb==0.19.4
+pandas==2.3.0 ; python_version >= "3.8" and python_version < "4.0"
+ydata-profiling==4.16.1 ; python_version >= "3.8" and python_version < "4.0"
+ipywidgets==8.1.7 ; python_version >= "3.8" and python_version < "4.0"
+langchain==0.3.14 ; python_version >= "3.8" and python_version < "4.0"
+langchain-google-genai==2.0.9 ; python_version >= "3.8" and python_version < "4.0"
+langchain_chroma==0.2.3 ; python_version >= "3.8" and python_version < "4.0"
+langchain_community==0.3.14 ; python_version >= "3.8" and python_version < "4.0"
+langchain_huggingface==0.2.0 ; python_version >= "3.8" and python_version < "4.0"
+chromadb==0.5.3 ; python_version >= "3.8" and python_version < "4.0"
+pypdf==5.7.0 ; python_version >= "3.8" and python_version < "4.0"
+wandb==0.19.4 ; python_version >= "3.8" and python_version < "4.0"
 lightgbm==4.5.0 ; python_version >= "3.8" and python_version < "4.0"
 xgboost==2.1.3 ; python_version >= "3.8" and python_version < "4.0"
 scikit_optimize==0.10.2 ; python_version >= "3.8" and python_version < "4.0"
 plotly>=5.9.0 ; python_version >= "3.8" and python_version < "4.0"
-streamlit==1.41.1
-nbformat==5.10.4
-duckduckgo-search
+streamlit==1.41.1 ; python_version >= "3.8" and python_version < "4.0"
+nbformat==5.10.4 ; python_version >= "3.8" and python_version < "4.0"
+pydantic==2.11.7 ; python_version >= "3.8" and python_version < "4.0"
+shap==0.47.2 ; python_version >= "3.8" and python_version < "4.0"
