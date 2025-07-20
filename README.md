@@ -2,33 +2,17 @@
 
 Um agente de IA projetado para auxiliar na triagem e no fornecimento de informações sobre doenças respiratórias comuns (Gripe, Resfriado Comum, Alergias e COVID-19), utilizando uma base de conhecimento confiável e modelos preditivos explicáveis.
 
-> **Missão do Projeto:** Democratizar o acesso a informações de saúde confiáveis e auxiliar na diferenciação de sintomas respiratórios, oferecendo uma primeira camada de orientação baseada em evidências e dados.
+> **Objetivo do Projeto:** Oferecer uma primeira camada de orientação de diagnóstico baseada em inferência e probabilidade.
 
 ## ✨ Principais Funcionalidades
 
 * **Triagem Inteligente de Sintomas:** Utiliza um modelo de Machine Learning para analisar os sintomas relatados pelo usuário e calcular a probabilidade de cada uma das quatro condições respiratórias.
-* **Base de Conhecimento Confiável (RAG):** Responde a perguntas sobre as doenças, tratamentos e prevenção utilizando a técnica de *Retrieval-Augmented Generation* (RAG) sobre documentos oficiais e guias de saúde.
+> **Modelos Machine Learning:** Pipeline como modelos clássicos de Machine Learning, os selecionados para inferência foram a Regressão Logística e a Rede Bayesiana.
+* **Base de Conhecimento Confiável (RAG):** Responde a perguntas sobre as doenças, tratamentos e prevenção utilizando a técnica de *Retrieval-Augmented Generation* (RAG) sobre documentos oficiais e guias de saúde. 
+> **Modelo Embedding:** Foi utilizado o Snowflake-Artic-Embed2, disponível no Ollama ou no Hugging Face.
 * **Análise Preditiva Explicável (XAI):** Para cada predição, gera um gráfico de forças (force plot) utilizando a biblioteca `SHAP`, mostrando quais sintomas mais contribuíram para o diagnóstico sugerido e por quê.
+> **LLM-Gemini-1.5-Flash:** Escolhemos o modelo do Gemini devido a alinhamento com os objetivos do projeto, gratuitidade para o nosso uso e experiência prévia com o modelo.
 
-## ⚙️ Como Funciona
-
-O fluxo de interação do sistema ocorre da seguinte forma:
-
-1.  **Entrada do Usuário:** O usuário descreve seus sintomas em linguagem natural.
-2.  **Extração de Sintomas:** Uma LLM (Large Language Model) processa o texto e preenche uma estrutura de dados (Pydantic), identificando a presença ou ausência de sintomas pré-definidos (ex: febre, tosse, coriza).
-3.  **Classificação Preditiva:** O vetor de sintomas estruturado é enviado para um modelo de classificação (ex: Regressão Logística) treinado, que retorna a probabilidade de cada doença.
-4.  **Geração de Explicação:** O `SHAP Explainer` analisa a predição e gera um *force plot*, que é salvo como uma imagem (`artefatos/shap_force.png`).
-5.  **Resposta ao Usuário:** O sistema apresenta a doença mais provável com seu percentual de confiança e permite que o usuário faça perguntas abertas, que são respondidas pelo sistema RAG.
-
-## 🚀 Tecnologias Utilizadas
-
-| Categoria                               | Tecnologias                                     |
-| :-------------------------------------- | :---------------------------------------------- |
-| **Machine Learning & Análise Preditiva**| `scikit-learn`, `pandas`, `numpy`      |
-| **RAG & LLMs** | `LangChain`, `ChromaDB`, `Gemini` |
-| **Explicabilidade de IA (XAI)** | `SHAP`                                          |
-| **Estrutura de Dados & Tipagem** | `Pydantic`                                      |
-| **Visualização de Dados** | `Matplotlib`                                    |
 
 ## 📚 Base de Conhecimento e Fontes de Dados
 
@@ -62,6 +46,83 @@ Para o treinamento e avaliação dos modelos de classificação, foi utilizado u
     * **Fonte:** Kaggle
     * **Link:** [COVID, Flu, Cold, Allergy Symptoms Dataset](https://www.kaggle.com/datasets/walterconway/covid-flu-cold-symptoms)
 
+## 🫛 PEAS (Perfomance, Enviroments, Actuators, Sensors)
+
+1.  **Perfomance:** 
+    * **Métricas no conjunto de validação.**
+
+    ![Métricas dos Modelos](artefatos\perfomance.jpg)
+
+2.  **Enviroment:**
+    * **LLM:** Gemini 1.5 Flash
+    * **Base de Conhecimento:** Todos os mencionados anteriormente.
+3. **Actuators:** 
+    * **Resposta do chatbot**
+    * **Inferência do Modelo**
+    * **Busca de Informações com o RAG**
+4. **Sensores**
+    * **Interpretabilidade do texto do Usuário**
+    * **Parser do Pydantic**
+    * **Embeddings para o RAG**
+
+## ⚙️ Como Funciona - Arquitetura
+
+O fluxo de interação do sistema ocorre da seguinte forma:
+
+1.  **Entrada do Usuário:** O usuário descreve seus sintomas em linguagem natural.
+2.  **Extração de Sintomas:** Uma LLM (Large Language Model) processa o texto e preenche uma estrutura de dados (Pydantic), identificando a presença ou ausência de sintomas pré-definidos (ex: febre, tosse, coriza).
+3.  **Classificação Preditiva:** O vetor de sintomas estruturado é enviado para um modelo de classificação (ex: Regressão Logística) treinado, que retorna a probabilidade de cada doença.
+4.  **Geração de Explicação:** O `SHAP Explainer` analisa a predição e gera um *force plot*, que é salvo como uma imagem. ![Exemplo Shap](artefatos/shap_force.png)
+5.  **Resposta ao Usuário:** O sistema apresenta a doença mais provável com seu percentual de confiança e permite que o usuário faça perguntas abertas, que são respondidas pelo sistema RAG.
+
+## 📏 Métricas
+
+Como o nosso conjunto é desbalanceado, optamos pela métricas do F1-score, BACC , ACC e MCC.
+Selecionamos o modelo com maior MCC para fazer a inferência dos sintomas enviados pelos usuários.
+1. **Resultado Métricas para a Pipeline**
+    * **Validação:** Demonstrada no tópico do PEAS. 
+    * **Teste:** A partir do resultado no conjunto de validação escolhemos o melhor modelo como a Regressão Logística. E os resultados das métricas no conjunto de teste foi:
+
+        ![Métricas Conjunto de Teste](artefatos/metricas_teste.jpg).
+
+2. **Matriz de Confusão**
+
+Para o modelo Bayesiano:
+
+![Matriz de Confusão Bayes](artefatos/confusion_matrix_bayes.jpeg)
+
+Para a Regressão Logística:
+
+![Matriz de Confusão Regressão Logística](artefatos/confusion_matrix_lr.jpeg)
+
+## 🆘 Limitações e Dificuldades na Construção do Projeto:
+* **Base de Conhecimento:** Dificuldade em encontrar informações confiáveis, principalmente para o COVID, que foi sujeito a uma grande quantidade de desinformação e fake news durante a pandemia.
+* **Dados Desbalanceados:** Os dados do nosso conjunto são muito desbalanceados:
+
+![Distribuição das Classes](artefatos/distribuicao.jpg)
+
+Por isso utilizamos o active learning para identificar a melhor estratégia de seleção da amostra:
+![Resultado Active Learning](artefatos/active_learning.png)
+
+Observamos ao analisar o gráfio do MCC que devido a facilidade da nossa tarefa de classificação poderíamos utilizar a amostra aleatória sem perdas de qualidade.
+
+No final optamos por selecionar de forma aleatória 3000 instâncias para gripe e alrgia e manter todas as instâncias das outras duas classes.
+* **SHAP:** Tivemos dificuldade para plotar o XAI para o modelo Bayesiano;
+
+## 🔮 Possíveis Melhorias
+* Corrigir o SHAP para as redes Bayesianas com o intuitode garantir as explicabilidade desse modelo.
+* Melhoria da experiência do usuário, ao aumentar a portabilidade do Chatbot ao adiciona-lo em aplicativos de comunicação como Whatsapp, Telegram, Discord.
+* Criação de serviço que se comunique com o médico, com a finalidade de enviar o resumo da conversa, o resultado da inferência e sua confiança, além da imagem do SHAP, explicando o resultado.
+
+## 🚀 Tecnologias Utilizadas
+
+| Categoria                               | Tecnologias                                     |
+| :-------------------------------------- | :---------------------------------------------- |
+| **Machine Learning & Análise Preditiva**| `scikit-learn`, `pandas`, `numpy`      |
+| **RAG & LLMs** | `LangChain`, `ChromaDB`, `Gemini` |
+| **Explicabilidade de IA (XAI)** | `SHAP`                                          |
+| **Estrutura de Dados & Tipagem** | `Pydantic`                                      |
+| **Visualização de Dados** | `Matplotlib`                                    |
 ## 🛠️ Como Executar o Projeto
 
 1.  **Clone o Repositório**
