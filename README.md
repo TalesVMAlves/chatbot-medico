@@ -51,7 +51,7 @@ Para o treinamento e avaliação dos modelos de classificação, foi utilizado u
 1.  **Perfomance:** 
     * **Métricas no conjunto de validação.**
 
-    ![Métricas dos Modelos](artefatos\perfomance.jpg)
+    ![Métricas dos Modelos](artefatos/perfomance.jpg)
 
 2.  **Enviroment:**
     * **LLM:** Gemini 1.5 Flash
